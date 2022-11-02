@@ -1,31 +1,27 @@
-import serial.tools.list_ports
-from serial.tools import list_ports
+import serial
 
-ports = serial.tools.list_ports.comports()
-serialInst = serial.Serial()
+ser = serial.Serial('COM3', baudrate=9600, stopbits=1, parity="N",  timeout=2)
 
-portList = []
+while True:
+    s = ser.read(1)
+    if ord(s) == int("AA",16):
+        s = ser.read(1)
+        if ord(s) == int("C0",16):
+            s = ser.read(7)
+            a = []
+            for i in s:
+                a.append(i)
+            print(a)
+            pm2hb= s[0]
+            pm2lb= s[1]
+            pm10hb= s[2]
+            pm10lb= s[3]
+            cs = s[6]
+            # we should verify the checksum... it is the sum of bytes 1-6 truncated...
 
-for onePort in ports:
-    portList.append(str(onePort))
-    print(str(onePort))
-
-val = input("select Port: COM")
-print(val)
-
-
-for x in range(0,len(portList)):
-    if portList[x].startswith("COM" + str(val)):
-        portVar = "COM" + str(val)
-        print(portList[x])
-
-serialInst.baurate = 9600
-serialInst.port = portVar
-serialInst.open()
-
-
-packet = serialInst.readline()
-var1 = ''
-list = [var1.apped(packet)]
-var1.apped(packet)
-print(list)
+            try:
+                print("PM2.5 - ", float(pm2hb + pm2lb*256)/10.0 ," PM10 - ", float(pm10hb + pm10lb*256)/10.0)
+            except:
+                pass
+    else:
+        pass
